@@ -3,8 +3,9 @@ import Image from "next/image";
 import { IoIosArrowDown } from "react-icons/io";
 
 import { dataBerita, dataProgram } from "@/constants/data-yabipa";
+import DataSection from "@/components/landing/DataSection";
 
-const page = () => {
+const Page = () => {
   return (
     <div className="homepage">
       <div className="container lg:max-w-300 px-4 mx-auto">
@@ -144,144 +145,11 @@ const page = () => {
         {/* Program Akademik */}
 
         {/* Data */}
-        <div className="kumpulan-data sm:py-20 py-10" id="data">
-          <h1 className="text-5xl/tight font-bold mb-5 text-center">
-            Kumpulan Data
-          </h1>
-          <p className="lg:text-lg/loose text-base/loose text-center">
-            Berikut ini merupakan kumpulan data yang dapat diakses.
-          </p>
-
-          <div className="mt-16 grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-            <div className="kurikulum">
-              <h1 className="text-center font-bold text-xl">Kurikulum</h1>
-              <div className="flex flex-col gap-3 mt-6">
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 1
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 2
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 3
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 4
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 5
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 6
-                </a>
-              </div>
-            </div>
-            <div className="keguruan">
-              <h1 className="text-center font-bold text-xl">Keguruan</h1>
-              <div className="flex flex-col gap-3 w-fit mx-auto mt-6">
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Struktur Organisasi
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 2
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 3
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 4
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 5
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Data 6
-                </a>
-              </div>
-            </div>
-            <div className="kesiswaan">
-              <h1 className="text-center font-bold text-xl">Kesiswaan</h1>
-              <div className="flex flex-col gap-3 w-fit mx-auto mt-6">
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Kelas 7
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Kelas 8
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Kelas 9
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Kelas 10
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Kelas 11
-                </a>
-                <a
-                  href="#"
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  Kelas 12
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DataSection />
         {/* Data */}
       </div>
     </div>
   );
 };
 
-export default page;
+export default Page;
