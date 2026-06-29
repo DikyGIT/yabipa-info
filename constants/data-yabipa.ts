@@ -22,30 +22,26 @@ export const dataBerita = [
   },
 ];
 
-import Program1 from "@/public/images/program1.webp";
-import Program2 from "@/public/images/program2.webp";
-import Program3 from "@/public/images/program3.webp";
-
 export const dataProgram = [
   {
     id: 1,
     program: "SMP IT YABIPA",
     deskripsi:
       "Kurikulum Merdeka dipadukan dengan tahfidz Al-Qur`an, bahasa Arab & Inggris, serta pengembangan lifeskill.",
-    gambar: Program1,
+    gambar: "/images/program1.webp",
   },
   {
     id: 2,
     program: "SMA IT YABIPA",
     deskripsi:
       "Program IPA dan IPS dengan pendalaman sains, riset, serta persiapan masuk perguruan tinggi negeri.",
-    gambar: Program2,
+    gambar: "/images/program2.webp",
   },
   {
     id: 3,
     program: "Kepesantrenan",
     deskripsi:
       "Tahsin dan Tahfidz Qur`an, kajian kitab kuning, fiqih, akidah, dan pembinaan akhlak mulia sehari-hari.",
-    gambar: Program3,
+    gambar: "/images/program3.webp",
   },
 ];
