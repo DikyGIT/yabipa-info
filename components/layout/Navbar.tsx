@@ -1,6 +1,11 @@
+"use client";
+
 import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
 
 const Navbar = () => {
+  const { data: session } = useSession();
+
   return (
     <div className="navbar">
       <div className="container px-4 mx-auto">
@@ -47,8 +52,24 @@ const Navbar = () => {
               </a>
             </li>
           </ul>
-          <div>
-            <p className="underline text-xl">Guru</p>
+          <div className="flex items-center gap-3">
+            {session ? (
+              <>
+                <span className="underline text-xl">
+                  {session.user?.name}
+                </span>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="bg-red-600 text-white text-sm px-3 py-1 rounded cursor-pointer hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <a href="/login" className="underline text-xl">
+                Login
+              </a>
+            )}
           </div>
         </div>
       </div>

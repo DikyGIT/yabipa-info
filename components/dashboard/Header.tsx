@@ -1,4 +1,7 @@
+"use client";
+
 import { MdMenuOpen } from "react-icons/md";
+import { signOut } from "next-auth/react";
 
 type HeaderProps = {
   isCollapsed: boolean;
@@ -16,7 +19,10 @@ const Header = ({ isCollapsed, setIsCollapsed }: HeaderProps) => {
         <h1 className="text-lg font-bold">Dashboard</h1>
       </div>
       <div>
-        <button className="bg-red-600 text-white p-2 rounded cursor-pointer hover:bg-red-700">
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="bg-red-600 text-white p-2 rounded cursor-pointer hover:bg-red-700"
+        >
           Logout
         </button>
       </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import SessionProvider from "@/components/providers/SessionProvider";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -24,7 +25,9 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className={`min-h-full ${poppins.className} bg-[#F7F8FC]`}>
-        <main>{children}</main>
+        <SessionProvider>
+          <main>{children}</main>
+        </SessionProvider>
       </body>
     </html>
   );
