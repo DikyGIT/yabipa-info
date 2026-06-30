@@ -187,6 +187,7 @@ const UsersPage = () => {
                 className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-800"
                 required
               >
+                <option value="ADMIN">Admin</option>
                 <option value="KEPALA">Kepala Sekolah</option>
                 <option value="GURU">Guru</option>
               </select>
