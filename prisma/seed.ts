@@ -16,10 +16,10 @@ async function main() {
     },
   });
 
-  const kepalaPassword = await bcrypt.hash("kepalasekolah123", 10);
+  const kepalaPassword = await bcrypt.hash("kepala123", 10);
   await prisma.user.create({
     data: {
-      username: "kepalasekolah",
+      username: "kepala",
       password: kepalaPassword,
       name: "Kepala Sekolah",
       role: "KEPALA",
