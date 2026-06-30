@@ -1,40 +1,33 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 
-const dataKurikulum = [
-  { label: "Data 1", href: "/data/kurikulum/1" },
-  { label: "Data 2", href: "/data/kurikulum/2" },
-  { label: "Data 3", href: "/data/kurikulum/3" },
-  { label: "Data 4", href: "/data/kurikulum/4" },
-  { label: "Data 5", href: "/data/kurikulum/5" },
-  { label: "Data 6", href: "/data/kurikulum/6" },
-];
-
-const dataKeguruan = [
-  { label: "Struktur Organisasi", href: "/data/keguruan/1" },
-  { label: "Data 2", href: "/data/keguruan/2" },
-  { label: "Data 3", href: "/data/keguruan/3" },
-  { label: "Data 4", href: "/data/keguruan/4" },
-  { label: "Data 5", href: "/data/keguruan/5" },
-  { label: "Data 6", href: "/data/keguruan/6" },
-];
-
-const dataKesiswaan = [
-  { label: "Kelas 7", href: "/data/kesiswaan/7" },
-  { label: "Kelas 8", href: "/data/kesiswaan/8" },
-  { label: "Kelas 9", href: "/data/kesiswaan/9" },
-  { label: "Kelas 10", href: "/data/kesiswaan/10" },
-  { label: "Kelas 11", href: "/data/kesiswaan/11" },
-  { label: "Kelas 12", href: "/data/kesiswaan/12" },
-];
+type Dokumen = {
+  id: string;
+  nama: string;
+  link: string;
+  aksesRole: string;
+};
 
 const DataSection = () => {
   const { data: session } = useSession();
   const role = session?.user?.role;
+  const [dokumenList, setDokumenList] = useState<Dokumen[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Kepala: semua data, Guru: hanya kurikulum & keguruan, Belum login: semua
-  const showKesiswaan = role !== "GURU";
+  useEffect(() => {
+    async function load() {
+      const url = role
+        ? `/api/dokumen?role=${role}`
+        : "/api/dokumen";
+      const res = await fetch(url);
+      const data = await res.json();
+      setDokumenList(data);
+      setLoading(false);
+    }
+    void load();
+  }, [role]);
 
   return (
     <div className="kumpulan-data sm:py-20 py-10" id="data">
@@ -45,61 +38,30 @@ const DataSection = () => {
         Berikut ini merupakan kumpulan data yang dapat diakses.
       </p>
 
-      <div className="mt-16 grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-        {/* Kurikulum - semua bisa akses */}
-        <div className="kurikulum">
-          <h1 className="text-center font-bold text-xl">Kurikulum</h1>
-          <div className="flex flex-col gap-3 mt-6">
-            {dataKurikulum.map((item) => (
+      {loading ? (
+        <p className="text-center text-gray-400 mt-10">Memuat data...</p>
+      ) : dokumenList.length === 0 ? (
+        <p className="text-center text-gray-400 mt-10">Belum ada data tersedia.</p>
+      ) : (
+        <div className="mt-16 grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
+          {dokumenList.map((dokumen) => (
+            <div
+              key={dokumen.id}
+              className="bg-white shadow rounded-tr-2xl rounded-tl-2xl p-7 text-center"
+            >
+              <h1 className="text-xl font-bold mb-2">{dokumen.nama}</h1>
               <a
-                key={item.href}
-                href={item.href}
-                className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
+                href={dokumen.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-sky-800 hover:bg-sky-900 text-white p-2 rounded mt-4"
               >
-                {item.label}
+                Buka Dokumen
               </a>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-
-        {/* Keguruan - semua bisa akses */}
-        <div className="keguruan">
-          <h1 className="text-center font-bold text-xl">Keguruan</h1>
-          <div className="flex flex-col gap-3 w-fit mx-auto mt-6">
-            {dataKeguruan.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Kesiswaan - hanya kepala & belum login */}
-        <div className="kesiswaan">
-          <h1 className="text-center font-bold text-xl">Kesiswaan</h1>
-          <div className="flex flex-col gap-3 w-fit mx-auto mt-6">
-            {showKesiswaan ? (
-              dataKesiswaan.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="bg-sky-800 hover:bg-sky-900 text-white p-2 rounded w-fit mx-auto"
-                >
-                  {item.label}
-                </a>
-              ))
-            ) : (
-              <p className="text-center text-gray-400 italic">
-                Akses terbatas untuk role Guru
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
