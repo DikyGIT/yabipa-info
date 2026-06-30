@@ -6,16 +6,12 @@ export const proxy = auth((req) => {
   const session = req.auth;
   const role = session?.user?.role;
 
-  
-  const publicPages = ["/"];
-  const isPublicPage = publicPages.some((page) => pathname === page);
-
-  
-  if (!session && !isPublicPage && pathname !== "/login") {
+  // Belum login → redirect ke login (kecuali halaman login)
+  if (!session && pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  
+  // Sudah login → redirect dari /login
   if (session && pathname === "/login") {
     if (role === "ADMIN") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -23,7 +19,7 @@ export const proxy = auth((req) => {
     return NextResponse.redirect(new URL("/yabipa-home", req.url));
   }
 
-  
+  // Proteksi /dashboard → HANYA admin
   if (pathname.startsWith("/dashboard")) {
     if (!session) {
       return NextResponse.redirect(new URL("/login", req.url));
