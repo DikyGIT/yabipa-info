@@ -36,6 +36,7 @@ const Page = () => {
             loading="eager"
             priority
             className="rounded-lg mx-auto"
+            style={{ width: "auto", height: "auto" }}
           />
         </div>
 
@@ -102,6 +103,7 @@ const Page = () => {
                   alt="Hero"
                   loading="lazy"
                   className="aspect-video rounded-tr-2xl rounded-tl-2xl w-full"
+                  style={{ width: "100%", height: "auto" }}
                 />
                 <div className="desc p-4 text-center">
                   <h1 className="text-2xl font-bold mb-2">{data.Judul}</h1>
