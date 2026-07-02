@@ -4,26 +4,33 @@ import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Swal from "sweetalert2";
 
 type Dokumen = {
   id: string;
   nama: string;
   link: string;
+  kategori: string;
   aksesRole: string;
   createdAt: string;
 };
+
+const PER_PAGE = 3;
 
 const DokumenPage = () => {
   const [dokumenList, setDokumenList] = useState<Dokumen[]>([]);
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [nama, setNama] = useState("");
   const [link, setLink] = useState("");
+  const [kategori, setKategori] = useState("Kurikulum");
   const [aksesKepala, setAksesKepala] = useState(true);
   const [aksesGuru, setAksesGuru] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [search, setSearch] = useState("");
 
   const loadDokumen = async () => {
     const res = await fetch("/api/dokumen");
@@ -33,12 +40,30 @@ const DokumenPage = () => {
   };
 
   useEffect(() => {
-    loadDokumen();
+    let cancelled = false;
+    fetch("/api/dokumen")
+      .then((res) => res.json())
+      .then((data) => { if (!cancelled) { setDokumenList(data); setLoading(false); } });
+    return () => { cancelled = true; };
   }, []);
+
+  const filtered = dokumenList.filter((d) => {
+    if (!search) return true;
+    return d.nama.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
 
   const resetForm = () => {
     setNama("");
     setLink("");
+    setKategori("Kurikulum");
     setAksesKepala(true);
     setAksesGuru(true);
     setEditId(null);
@@ -61,6 +86,7 @@ const DokumenPage = () => {
     const body = {
       nama,
       link,
+      kategori,
       aksesRole: buildAksesRole(),
     };
 
@@ -81,11 +107,16 @@ const DokumenPage = () => {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Gagal menyimpan dokumen");
+      Swal.fire({ icon: "error", title: "Gagal", text: data.error || "Gagal menyimpan dokumen", confirmButtonColor: "#1e40af" });
       return;
     }
 
-    setSuccess(editId ? "Dokumen berhasil diupdate!" : "Dokumen berhasil ditambahkan!");
+    Swal.fire({
+      icon: "success",
+      title: editId ? "Dokumen diupdate!" : "Dokumen ditambahkan!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
     resetForm();
     loadDokumen();
   };
@@ -94,6 +125,7 @@ const DokumenPage = () => {
     setEditId(dokumen.id);
     setNama(dokumen.nama);
     setLink(dokumen.link);
+    setKategori(dokumen.kategori);
     setAksesKepala(dokumen.aksesRole.includes("KEPALA"));
     setAksesGuru(dokumen.aksesRole.includes("GURU"));
     setError("");
@@ -101,9 +133,22 @@ const DokumenPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Yakin ingin menghapus dokumen ini?")) return;
-    await fetch(`/api/dokumen/${id}`, { method: "DELETE" });
-    loadDokumen();
+    const result = await Swal.fire({
+      title: "Yakin hapus?",
+      text: "Data dokumen akan dihapus permanen",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
+      await fetch(`/api/dokumen/${id}`, { method: "DELETE" });
+      Swal.fire({ icon: "success", title: "Terhapus!", timer: 1000, showConfirmButton: false });
+      loadDokumen();
+    }
   };
 
   // Export Excel
@@ -198,6 +243,19 @@ const DokumenPage = () => {
               />
             </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="kategori" className="mb-1">Kategori</label>
+            <select
+              id="kategori"
+              value={kategori}
+              onChange={(e) => setKategori(e.target.value)}
+              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-800"
+            >
+              <option value="Kurikulum">Kurikulum</option>
+              <option value="Keguruan">Keguruan</option>
+              <option value="Kesiswaan">Kesiswaan</option>
+            </select>
+          </div>
           {/* Checkbox Akses Role */}
           <div className="flex flex-col gap-2">
             <label className="mb-1">
@@ -246,30 +304,28 @@ const DokumenPage = () => {
 
       {/* Tabel Dokumen */}
       <div className="bg-white shadow rounded p-6 mt-5">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
           <h1 className="text-xl font-bold">Tabel Dokumen</h1>
           {dokumenList.length > 0 && (
-            <div className="flex gap-2">
-              <button
-                onClick={exportExcel}
-                className="bg-green-600 text-white px-4 py-1.5 rounded hover:bg-green-700 cursor-pointer text-sm"
-              >
-                📊 Export Excel
-              </button>
-              <button
-                onClick={exportPDF}
-                className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 cursor-pointer text-sm"
-              >
-                📄 Export PDF
-              </button>
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                placeholder="Cari dokumen..."
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="border border-gray-300 rounded-md py-1.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-800"
+              />
+              <button onClick={exportExcel} className="bg-green-600 text-white px-4 py-1.5 rounded hover:bg-green-700 cursor-pointer text-sm">📊 Excel</button>
+              <button onClick={exportPDF} className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 cursor-pointer text-sm">📄 PDF</button>
             </div>
           )}
         </div>
         {loading ? (
           <p>Memuat data...</p>
-        ) : dokumenList.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <p className="text-gray-500">Belum ada dokumen.</p>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -277,15 +333,16 @@ const DokumenPage = () => {
                   <th className="p-3 border">No</th>
                   <th className="p-3 border">Nama</th>
                   <th className="p-3 border">Link</th>
+                  <th className="p-3 border">Kategori</th>
                   <th className="p-3 border">Akses</th>
                   <th className="p-3 border">Tanggal</th>
                   <th className="p-3 border">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {dokumenList.map((dokumen, index) => (
+                {paged.map((dokumen, index) => (
                   <tr key={dokumen.id} className="hover:bg-gray-50">
-                    <td className="p-3 border">{index + 1}</td>
+                    <td className="p-3 border">{(currentPage - 1) * PER_PAGE + index + 1}</td>
                     <td className="p-3 border">{dokumen.nama}</td>
                     <td className="p-3 border">
                       <a
@@ -299,6 +356,7 @@ const DokumenPage = () => {
                           : dokumen.link}
                       </a>
                     </td>
+                    <td className="p-3 border">{dokumen.kategori}</td>
                     <td className="p-3 border">
                       <div className="flex gap-1 flex-wrap">
                         {dokumen.aksesRole.split(",").map((role) => (
@@ -333,6 +391,16 @@ const DokumenPage = () => {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-4">
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-30 cursor-pointer">&laquo;</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button key={page} onClick={() => setCurrentPage(page)} className={`px-3 py-1 rounded border cursor-pointer ${currentPage === page ? "bg-sky-800 text-white border-sky-800" : "border-gray-300 hover:bg-gray-100"}`}>{page}</button>
+              ))}
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-30 cursor-pointer">&raquo;</button>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>

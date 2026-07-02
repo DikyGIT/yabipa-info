@@ -11,19 +11,30 @@ import DataSection from "@/components/landing/DataSection";
 type Berita = {
   id: string;
   judul: string;
-  kategori: string | null;
   pj: string | null;
   tanggal: string;
 };
 
 const Page = () => {
   const [dataBerita, setDataBerita] = useState<Berita[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 3;
+  const totalPages = Math.ceil(dataBerita.length / perPage);
 
   useEffect(() => {
-    void fetch("/api/berita?status=PUBLISHED")
+    void fetch("/api/berita")
       .then((res) => res.json())
       .then((data) => setDataBerita(data));
   }, []);
+
+  const formatTanggal = (t: string) => {
+    return new Date(t).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="homepage">
       <div className="container lg:max-w-300 px-4 mx-auto">
@@ -108,27 +119,64 @@ const Page = () => {
             Informasi terkini mengenai kegiatan dan berita terbaru Yabipa.
           </p>
 
-          <div className="mt-16 grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-            {dataBerita.map((data) => (
-              <div
-                className="bg-white shadow rounded-tr-2xl rounded-tl-2xl"
-                key={data.id}
-              >
-                <Image
-                  src={"/images/hero-img.webp"}
-                  width={400}
-                  height={200}
-                  alt="Hero"
-                  loading="lazy"
-                  className="aspect-video rounded-tr-2xl rounded-tl-2xl w-full"
-                  style={{ width: "100%", height: "auto" }}
-                />
-                <div className="desc p-4 text-center">
-                  <h1 className="text-2xl font-bold mb-2">{data.Judul}</h1>
-                  <p>{data.tanggal}</p>
+          <div className="mt-16">
+            {dataBerita.length === 0 ? (
+              <p className="text-center text-gray-400">
+                Belum ada berita yang dipublikasikan.
+              </p>
+            ) : (
+              <>
+                <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
+                  {dataBerita
+                    .slice((currentPage - 1) * perPage, currentPage * perPage)
+                    .map((data) => (
+                      <div
+                        className="bg-white shadow rounded-tr-2xl rounded-tl-2xl"
+                        key={data.id}
+                      >
+                        <div className="desc p-4 text-center">
+                          <h1 className="text-2xl font-bold mb-2">{data.judul}</h1>
+                          {data.pj && <p className="text-lg font-semibold text-black/60 mb-6">{data.pj}</p>}
+                          <p>{formatTanggal(data.tanggal)}</p>
+                        </div>
+                      </div>
+                    ))}
                 </div>
-              </div>
-            ))}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-10">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      &laquo;
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 rounded border cursor-pointer ${
+                          currentPage === page
+                            ? "bg-sky-800 text-white border-sky-800"
+                            : "border-gray-300 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      &raquo;
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
         {/* Acara */}

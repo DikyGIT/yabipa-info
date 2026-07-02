@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { nama, link, aksesRole } = body;
+  const { nama, link, kategori, aksesRole } = body;
 
   if (!nama || !link) {
     return NextResponse.json({ error: "Nama dan link wajib diisi" }, { status: 400 });
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     data: {
       nama,
       link,
+      kategori: kategori || "Umum",
       aksesRole: aksesRole || "KEPALA,GURU",
     },
   });

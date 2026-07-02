@@ -4,15 +4,16 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginPage = () => {
   const router = useRouter();
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -28,10 +29,22 @@ const LoginPage = () => {
     setLoading(false);
 
     if (result?.error) {
-      setError("Username atau password salah");
+      Swal.fire({
+        icon: "error",
+        title: "Login Gagal",
+        text: "Username atau password salah",
+        confirmButtonColor: "#1e40af",
+      });
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil Masuk!",
+        timer: 1000,
+        showConfirmButton: false,
+      }).then(() => {
+        router.push("/dashboard");
+        router.refresh();
+      });
     }
   }
 
@@ -61,11 +74,6 @@ const LoginPage = () => {
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 lg:w-auto w-full"
         >
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
           <div className="flex flex-col gap-2">
             <label htmlFor="username">Username</label>
             <input
@@ -79,14 +87,23 @@ const LoginPage = () => {
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-800"
-              placeholder="Masukkan Password"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                className="border border-gray-300 rounded-md py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-800 w-full"
+                placeholder="Masukkan Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
           <button
             type="submit"

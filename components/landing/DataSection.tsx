@@ -7,20 +7,25 @@ type Dokumen = {
   id: string;
   nama: string;
   link: string;
+  kategori: string;
   aksesRole: string;
 };
+
+const KATEGORI = ["Semua", "Kurikulum", "Keguruan", "Kesiswaan"];
 
 const DataSection = () => {
   const { data: session } = useSession();
   const role = session?.user?.role;
   const [dokumenList, setDokumenList] = useState<Dokumen[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeKategori, setActiveKategori] = useState("Semua");
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 3;
 
   useEffect(() => {
     async function load() {
-      const url = role
-        ? `/api/dokumen?role=${role}`
-        : "/api/dokumen";
+      const url = role ? `/api/dokumen?role=${role}` : "/api/dokumen";
       const res = await fetch(url);
       const data = await res.json();
       setDokumenList(data);
@@ -28,6 +33,20 @@ const DataSection = () => {
     }
     void load();
   }, [role]);
+
+  // Reset ke halaman 1 kalau filter/search berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeKategori, search]);
+
+  const filtered = dokumenList.filter((d) => {
+    const matchKategori = activeKategori === "Semua" || d.kategori === activeKategori;
+    const matchSearch = d.nama.toLowerCase().includes(search.toLowerCase());
+    return matchKategori && matchSearch;
+  });
+
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paged = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
 
   return (
     <div className="kumpulan-data sm:py-20 py-10" id="data">
@@ -38,29 +57,81 @@ const DataSection = () => {
         Berikut ini merupakan kumpulan data yang dapat diakses.
       </p>
 
+      {/* Filter + Search */}
+      {dokumenList.length > 0 && (
+        <div className="flex justify-center items-center mt-8 gap-3 flex-wrap">
+          <input
+            type="text"
+            placeholder="Cari dokumen..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-sky-800 text-sm"
+          />
+          <select
+            value={activeKategori}
+            onChange={(e) => setActiveKategori(e.target.value)}
+            className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-sky-800 text-sm"
+          >
+            {KATEGORI.map((kat) => (
+              <option key={kat} value={kat}>{kat}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-center text-gray-400 mt-10">Memuat data...</p>
-      ) : dokumenList.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <p className="text-center text-gray-400 mt-10">Belum ada data tersedia.</p>
       ) : (
-        <div className="mt-16 grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6">
-          {dokumenList.map((dokumen) => (
-            <div
-              key={dokumen.id}
-              className="bg-white shadow rounded-tr-2xl rounded-tl-2xl p-7 text-center"
-            >
-              <h1 className="text-xl font-bold mb-2">{dokumen.nama}</h1>
+        <>
+          <div className="mt-8 grid md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
+            {paged.map((dokumen) => (
               <a
+                key={dokumen.id}
                 href={dokumen.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block bg-sky-800 hover:bg-sky-900 text-white p-2 rounded mt-4"
+                className="border-2 border-sky-800 text-sky-800 hover:bg-sky-800 hover:text-white rounded-lg p-4 flex items-center gap-3"
               >
-                Buka Dokumen
+                <span className="font-bold text-lg">{dokumen.nama}</span>
               </a>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-8">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              >
+                &laquo;
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 rounded border cursor-pointer ${
+                    currentPage === page
+                      ? "bg-sky-800 text-white border-sky-800"
+                      : "border-gray-300 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              >
+                &raquo;
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
