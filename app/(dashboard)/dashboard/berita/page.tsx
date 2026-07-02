@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type Berita = {
   id: string;
@@ -98,6 +101,42 @@ const BeritaPage = () => {
 
     await fetch(`/api/berita/${id}`, { method: "DELETE" });
     loadBerita();
+  };
+
+  // Export Excel
+  const exportExcel = () => {
+    const data = beritaList.map((b, i) => ({
+      No: i + 1,
+      Judul: b.judul,
+      Kategori: b.kategori || "-",
+      "Penanggung Jawab": b.pj || "-",
+      Tanggal: formatTanggal(b.tanggal),
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Berita");
+    XLSX.writeFile(wb, "data-berita.xlsx");
+  };
+
+  // Export PDF
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Data Berita - YABIPA", 14, 20);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["No", "Judul", "Kategori", "PJ", "Tanggal"]],
+      body: beritaList.map((b, i) => [
+        String(i + 1),
+        b.judul,
+        b.kategori || "-",
+        b.pj || "-",
+        formatTanggal(b.tanggal),
+      ]),
+    });
+    doc.save("data-berita.pdf");
   };
 
   // Format tanggal
@@ -207,7 +246,25 @@ const BeritaPage = () => {
 
       {/* Tabel Berita */}
       <div className="bg-white shadow rounded p-6 mt-5">
-        <h1 className="text-xl font-bold mb-4">Tabel Berita</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-xl font-bold">Tabel Berita</h1>
+          {beritaList.length > 0 && (
+            <div className="flex gap-2">
+              <button
+                onClick={exportExcel}
+                className="bg-green-600 text-white px-4 py-1.5 rounded hover:bg-green-700 cursor-pointer text-sm"
+              >
+                📊 Export Excel
+              </button>
+              <button
+                onClick={exportPDF}
+                className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 cursor-pointer text-sm"
+              >
+                📄 Export PDF
+              </button>
+            </div>
+          )}
+        </div>
         {loading ? (
           <p>Memuat data...</p>
         ) : beritaList.length === 0 ? (

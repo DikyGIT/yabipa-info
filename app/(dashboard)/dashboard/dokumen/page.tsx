@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type Dokumen = {
   id: string;
@@ -101,6 +104,41 @@ const DokumenPage = () => {
     if (!confirm("Yakin ingin menghapus dokumen ini?")) return;
     await fetch(`/api/dokumen/${id}`, { method: "DELETE" });
     loadDokumen();
+  };
+
+  // Export Excel
+  const exportExcel = () => {
+    const data = dokumenList.map((d, i) => ({
+      No: i + 1,
+      Nama: d.nama,
+      Link: d.link,
+      Akses: d.aksesRole,
+      Tanggal: formatTanggal(d.createdAt),
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Dokumen");
+    XLSX.writeFile(wb, "data-dokumen.xlsx");
+  };
+
+  // Export PDF
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Data Dokumen - YABIPA", 14, 20);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["No", "Nama", "Akses Role", "Tanggal"]],
+      body: dokumenList.map((d, i) => [
+        String(i + 1),
+        d.nama,
+        d.aksesRole,
+        formatTanggal(d.createdAt),
+      ]),
+    });
+    doc.save("data-dokumen.pdf");
   };
 
   const formatTanggal = (t: string) => {
@@ -208,7 +246,25 @@ const DokumenPage = () => {
 
       {/* Tabel Dokumen */}
       <div className="bg-white shadow rounded p-6 mt-5">
-        <h1 className="text-xl font-bold mb-4">Tabel Dokumen</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-xl font-bold">Tabel Dokumen</h1>
+          {dokumenList.length > 0 && (
+            <div className="flex gap-2">
+              <button
+                onClick={exportExcel}
+                className="bg-green-600 text-white px-4 py-1.5 rounded hover:bg-green-700 cursor-pointer text-sm"
+              >
+                📊 Export Excel
+              </button>
+              <button
+                onClick={exportPDF}
+                className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 cursor-pointer text-sm"
+              >
+                📄 Export PDF
+              </button>
+            </div>
+          )}
+        </div>
         {loading ? (
           <p>Memuat data...</p>
         ) : dokumenList.length === 0 ? (
