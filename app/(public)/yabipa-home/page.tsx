@@ -1,11 +1,29 @@
+"use client";
+
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 import { IoIosArrowDown } from "react-icons/io";
 
-import { dataBerita, dataProgram } from "@/constants/data-yabipa";
+import { dataProgram } from "@/constants/data-yabipa";
 import DataSection from "@/components/landing/DataSection";
 
+type Berita = {
+  id: string;
+  judul: string;
+  kategori: string | null;
+  pj: string | null;
+  tanggal: string;
+};
+
 const Page = () => {
+  const [dataBerita, setDataBerita] = useState<Berita[]>([]);
+
+  useEffect(() => {
+    void fetch("/api/berita?status=PUBLISHED")
+      .then((res) => res.json())
+      .then((data) => setDataBerita(data));
+  }, []);
   return (
     <div className="homepage">
       <div className="container lg:max-w-300 px-4 mx-auto">

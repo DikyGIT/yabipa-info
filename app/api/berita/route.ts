@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-// GET semua berita
-export async function GET() {
+// GET semua berita (bisa filter by status)
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get("status");
+
+  const where = status ? { status: status as "DRAFT" | "PUBLISHED" } : {};
+
   const berita = await prisma.berita.findMany({
+    where,
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(berita);
@@ -18,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { judul, kategori, pj, tanggal } = body;
+  const { judul, kategori, pj, tanggal, status } = body;
 
   if (!judul || !tanggal) {
     return NextResponse.json({ error: "Judul dan tanggal wajib diisi" }, { status: 400 });
@@ -30,6 +36,7 @@ export async function POST(req: NextRequest) {
       kategori: kategori || null,
       pj: pj || null,
       tanggal: new Date(tanggal),
+      status: status || "DRAFT",
     },
   });
 

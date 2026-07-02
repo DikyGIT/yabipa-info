@@ -18,13 +18,14 @@ model User {
 }
 
 model Berita {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   judul     String
   kategori  String?
   pj        String?
   tanggal   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    BeritaStatus @default(DRAFT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model Dokumen {
@@ -34,6 +35,11 @@ model Dokumen {
   aksesRole String   @default("KEPALA,GURU")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum BeritaStatus {
+  DRAFT
+  PUBLISHED
 }
 
 enum Role {

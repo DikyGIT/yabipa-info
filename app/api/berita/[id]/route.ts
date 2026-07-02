@@ -27,7 +27,7 @@ export async function PUT(
 
   const { id } = await params;
   const body = await req.json();
-  const { judul, kategori, pj, tanggal } = body;
+  const { judul, kategori, pj, tanggal, status } = body;
 
   const berita = await prisma.berita.update({
     where: { id },
@@ -36,6 +36,7 @@ export async function PUT(
       kategori: kategori || null,
       pj: pj || null,
       tanggal: new Date(tanggal),
+      status,
     },
   });
 

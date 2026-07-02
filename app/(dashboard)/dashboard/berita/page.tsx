@@ -11,6 +11,7 @@ type Berita = {
   kategori: string | null;
   pj: string | null;
   tanggal: string;
+  status: string;
   createdAt: string;
 };
 
@@ -24,6 +25,7 @@ const BeritaPage = () => {
   const [kategori, setKategori] = useState("");
   const [pj, setPj] = useState("");
   const [tanggal, setTanggal] = useState("");
+  const [status, setStatus] = useState("DRAFT");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -45,6 +47,7 @@ const BeritaPage = () => {
     setKategori("");
     setPj("");
     setTanggal("");
+    setStatus("DRAFT");
     setEditId(null);
     setError("");
     setSuccess("");
@@ -56,7 +59,7 @@ const BeritaPage = () => {
     setError("");
     setSuccess("");
 
-    const body = { judul, kategori, pj, tanggal };
+    const body = { judul, kategori, pj, tanggal, status };
 
     let res;
     if (editId) {
@@ -91,6 +94,7 @@ const BeritaPage = () => {
     setKategori(berita.kategori || "");
     setPj(berita.pj || "");
     setTanggal(berita.tanggal.split("T")[0]);
+    setStatus(berita.status);
     setError("");
     setSuccess("");
   };
@@ -224,6 +228,20 @@ const BeritaPage = () => {
               />
             </div>
           </div>
+          <div className="flex lg:flex-row flex-col lg:items-center gap-5">
+            <div className="flex flex-col gap-2 flex-1">
+              <label htmlFor="status" className="mb-1">Status</label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-800"
+              >
+                <option value="DRAFT">Draft</option>
+                <option value="PUBLISHED">Published</option>
+              </select>
+            </div>
+          </div>
           <div className="flex gap-3">
             <button
               type="submit"
@@ -279,6 +297,7 @@ const BeritaPage = () => {
                   <th className="p-3 border">Kategori</th>
                   <th className="p-3 border">PJ</th>
                   <th className="p-3 border">Tanggal</th>
+                  <th className="p-3 border">Status</th>
                   <th className="p-3 border">Aksi</th>
                 </tr>
               </thead>
@@ -290,6 +309,11 @@ const BeritaPage = () => {
                     <td className="p-3 border">{berita.kategori || "-"}</td>
                     <td className="p-3 border">{berita.pj || "-"}</td>
                     <td className="p-3 border">{formatTanggal(berita.tanggal)}</td>
+                    <td className="p-3 border">
+                      <span className={`text-xs px-2 py-1 rounded ${berita.status === "PUBLISHED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                        {berita.status === "PUBLISHED" ? "Published" : "Draft"}
+                      </span>
+                    </td>
                     <td className="p-3 border">
                       <div className="flex gap-2">
                         <button
