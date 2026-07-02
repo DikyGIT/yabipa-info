@@ -34,10 +34,15 @@ const DataSection = () => {
     void load();
   }, [role]);
 
-  // Reset ke halaman 1 kalau filter/search berubah
-  useEffect(() => {
+  const handleFilter = (value: string) => {
+    setActiveKategori(value);
     setCurrentPage(1);
-  }, [activeKategori, search]);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1);
+  };
 
   const filtered = dokumenList.filter((d) => {
     const matchKategori = activeKategori === "Semua" || d.kategori === activeKategori;
@@ -64,12 +69,12 @@ const DataSection = () => {
             type="text"
             placeholder="Cari dokumen..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-sky-800 text-sm"
           />
           <select
             value={activeKategori}
-            onChange={(e) => setActiveKategori(e.target.value)}
+            onChange={(e) => handleFilter(e.target.value)}
             className="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-sky-800 text-sm"
           >
             {KATEGORI.map((kat) => (
