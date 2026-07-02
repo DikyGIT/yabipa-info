@@ -1,5 +1,5 @@
 import { LuNewspaper } from "react-icons/lu";
-import { FaFolder, FaUsers } from "react-icons/fa";
+import { FaFolder, FaUsers, FaCalendarAlt } from "react-icons/fa";
 
 export const sidebarMenus = [
   {
@@ -16,5 +16,10 @@ export const sidebarMenus = [
     title: "Kelola User",
     href: "/dashboard/users",
     icon: FaUsers,
+  },
+  {
+    title: "Kalender",
+    href: "/dashboard/kalender",
+    icon: FaCalendarAlt,
   },
 ];
